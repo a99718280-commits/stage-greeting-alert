@@ -6,7 +6,7 @@ import json
 
 app = FastAPI()
 
-FIREBASE_CONFIG = {'apiKey': 'AIzaSyCXvA9n9doSv30ZIzbFc7XrIEqUeYteTk4', 'authDomain': 'stage-greeting-alert.firebaseapp.com', 'projectId': 'stage-greeting-alert', 'storageBucket': 'stage-greeting-alert.firebasestorage.app', 'messagingSenderId': '192680261195', 'appId': '1:192680261195:web:7d5f65afcaf248d77fbfce'}
+FIREBASE_CONFIG = {'apiKey': 'AIzaSyCXvA9n9doSv3OZIzbFc7Xr1EqUeYteTk4', 'authDomain': 'stage-greeting-alert.firebaseapp.com', 'projectId': 'stage-greeting-alert', 'storageBucket': 'stage-greeting-alert.firebasestorage.app', 'messagingSenderId': '192680261195', 'appId': '1:192680261195:web:7d5f65afcaf248d77fbfce'}
 VAPID_KEY = 'BPgkBtTm3c0ZTNU33gEj5AmkcIBcekGM5GXsT7rxgPCgire7KBizpImFLpOAJm3iRzcltBHW5CDfn0W1ek8vUvw'
 
 @app.get("/health")
