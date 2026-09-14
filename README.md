@@ -1,8 +1,7 @@
-# 무대인사 알림 - PWA/FCM 3차 버전
+# 무대인사 알림 - 서비스워커 수정 버전
 
-- Android Chrome 설치형 PWA 지원
-- 192/512 앱 아이콘 및 manifest 추가
-- Firebase Service Worker 초기화 오류 수정
-- 알림 허용 시 FCM 토큰 발급 준비
+Firebase Messaging 서비스워커를 classic worker + compat SDK 방식으로 수정했습니다.
 
-아직 실제 CGV/롯데시네마/메가박스 자동 감지와 서버 푸시 발송은 다음 단계입니다.
+## 테스트
+배포 완료 후 Android Chrome에서 페이지를 새로 열고 `알림 허용`을 누릅니다.
+`✅ 알림 연결 성공!`이 표시되면 서비스워커 등록과 FCM 토큰 발급까지 성공한 것입니다.
