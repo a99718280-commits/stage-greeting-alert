@@ -1,3 +1,3 @@
-# 무대인사 알림 - Firebase API 키 복사값 반영 최종본
+# 무대인사 알림 - FCM 토큰 복사 버튼 추가
 
-Google Cloud Console의 `키 표시`에서 복사한 Browser key 값을 그대로 반영했습니다.
+알림 연결 성공 후 `📋 FCM 토큰 복사` 버튼으로 Firebase 테스트용 등록 토큰을 복사할 수 있습니다.

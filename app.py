@@ -151,6 +151,7 @@ def home():
     <p>영화·배우·극장을 따로 고르지 않는 전체 알림 방식입니다.</p>
     <button id="allow">🔔 알림 허용</button>
     <button id="install">📲 앱 설치</button>
+    <button id="copyToken" style="display:none;background:#fff;color:#111;border:1px solid #ddd;">📋 FCM 토큰 복사</button>
     <div id="status">아직 이 기기의 푸시 알림이 연결되지 않았습니다.</div>
   </section>
 
@@ -168,8 +169,14 @@ def home():
     const statusEl = document.getElementById('status');
     const allowBtn = document.getElementById('allow');
     const installBtn = document.getElementById('install');
+    const copyTokenBtn = document.getElementById('copyToken');
 
     let deferredPrompt = null;
+
+    if (localStorage.getItem('fcm_token')) {
+      copyTokenBtn.style.display = 'block';
+    }
+
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -183,6 +190,23 @@ def home():
       await deferredPrompt.userChoice;
       deferredPrompt = null;
       installBtn.style.display = 'none';
+    });
+
+    copyTokenBtn.addEventListener('click', async () => {
+      const token = localStorage.getItem('fcm_token');
+      if (!token) {
+        statusEl.className = 'bad';
+        statusEl.textContent = '먼저 🔔 알림 허용을 눌러 토큰을 발급받아 주세요.';
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(token);
+        statusEl.className = 'ok';
+        statusEl.textContent = '✅ FCM 토큰 복사 완료! Firebase의 테스트 기기 칸에 붙여넣으세요.';
+      } catch (e) {
+        statusEl.className = 'bad';
+        statusEl.textContent = '토큰 복사에 실패했습니다. 다시 눌러주세요.';
+      }
     });
 
     allowBtn.addEventListener('click', async () => {
@@ -227,6 +251,7 @@ def home():
         }
 
         localStorage.setItem('fcm_token', token);
+        copyTokenBtn.style.display = 'block';
         statusEl.className = 'ok';
         statusEl.textContent = '✅ 알림 연결 성공! 이 기기의 FCM 푸시 토큰이 정상 발급됐습니다.';
         console.log('FCM token:', token);
