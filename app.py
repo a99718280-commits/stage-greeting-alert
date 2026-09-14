@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+import json
+import base64
+from pathlib import Path
 from fastapi.responses import HTMLResponse, Response, JSONResponse
 
 app = FastAPI(title="무대인사 알림")
@@ -20,6 +23,7 @@ PAGE = f'''<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111111">
 <link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>무대인사 알림</title>
 <style>
 *{{box-sizing:border-box}}body{{margin:0;background:#f4f5f7;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;color:#151515}}
@@ -31,7 +35,7 @@ h1{{font-size:28px;margin:4px 0}}.sub{{color:#777;margin:7px 0 28px}}
 .btn:disabled{{opacity:.55;cursor:default}}.demo{{padding:14px;border-radius:14px;background:#f6f6f7;margin-top:12px}}
 .ok{{color:#138a4b;font-weight:800}}.warn{{color:#b45a00;font-weight:800}}.err{{color:#b00020;font-weight:800}}
 .tokenbox{{display:none;margin-top:12px;padding:12px;background:#f6f6f7;border-radius:12px;word-break:break-all;font-size:11px;color:#555}}
-.copy{{display:none;margin-top:8px;width:100%;padding:11px;border:1px solid #ddd;border-radius:11px;background:#fff;font-weight:800;cursor:pointer}}
+.copy{{display:none;margin-top:8px;width:100%;padding:11px;border:1px solid #ddd;border-radius:11px;background:#fff;font-weight:800;cursor:pointer}}.install{{width:100%;padding:13px;border:1px solid #ddd;border-radius:14px;background:#fff;font-size:15px;font-weight:900;margin-top:10px;cursor:pointer}}
 </style>
 </head>
 <body><main>
@@ -40,6 +44,7 @@ h1{{font-size:28px;margin:4px 0}}.sub{{color:#777;margin:7px 0 28px}}
   <div class="live"><span class="dot"></span>전체 무대인사 감시 ON</div>
   <p class="small">영화·배우·극장을 따로 고르지 않는 전체 알림 방식입니다.</p>
   <button class="btn" id="allow">🔔 알림 허용</button>
+  <button class="install" id="install" style="display:none">📲 앱 설치</button>
   <p class="small" id="status">아직 이 기기의 푸시 알림이 연결되지 않았습니다.</p>
   <div class="tokenbox" id="token"></div>
   <button class="copy" id="copy">테스트용 토큰 복사</button>
@@ -50,7 +55,7 @@ h1{{font-size:28px;margin:4px 0}}.sub{{color:#777;margin:7px 0 28px}}
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
 <script>
-const firebaseConfig = {FIREBASE_CONFIG};
+const firebaseConfig = {json.dumps(FIREBASE_CONFIG)};
 const vapidKey = "{VAPID_KEY}";
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
@@ -58,6 +63,8 @@ const allowBtn = document.getElementById('allow');
 const statusEl = document.getElementById('status');
 const tokenEl = document.getElementById('token');
 const copyBtn = document.getElementById('copy');
+const installBtn = document.getElementById('install');
+let deferredPrompt = null;
 
 function setStatus(text, cls='') {{
   statusEl.className = 'small ' + cls;
@@ -92,6 +99,24 @@ async function registerPush() {{
     allowBtn.disabled = false;
   }}
 }}
+
+
+window.addEventListener('beforeinstallprompt', (e) => {{
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block';
+}});
+installBtn.addEventListener('click', async () => {{
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBtn.style.display = 'none';
+}});
+window.addEventListener('appinstalled', () => {{
+  installBtn.style.display = 'none';
+  setStatus('앱 설치 완료. 이제 알림 허용을 눌러주세요. 📲', 'ok');
+}});
 
 allowBtn.addEventListener('click', registerPush);
 copyBtn.addEventListener('click', async () => {{
@@ -130,7 +155,7 @@ window.addEventListener('load', async () => {{
 SERVICE_WORKER = f'''importScripts("https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js");
 
-firebase.initializeApp({FIREBASE_CONFIG});
+firebase.initializeApp({json.dumps(FIREBASE_CONFIG)});
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {{
@@ -157,11 +182,17 @@ self.addEventListener("notificationclick", (event) => {{
 MANIFEST = '''{
   "name": "무대인사 알림",
   "short_name": "무대인사알림",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#111111",
-  "description": "CGV·롯데시네마·메가박스 무대인사 알림"
+  "description": "CGV·롯데시네마·메가박스 무대인사 알림",
+  "icons": [
+    {"src":"/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
 }'''
 
 @app.get("/", response_class=HTMLResponse)
@@ -179,3 +210,12 @@ def manifest():
 @app.get("/health")
 def health():
     return JSONResponse({"ok": True, "push_client": "fcm-ready"})
+
+
+@app.get("/icon-192.png")
+def icon192():
+    return Response(Path("icon-192.png").read_bytes(), media_type="image/png", headers={"Cache-Control":"public, max-age=86400"})
+
+@app.get("/icon-512.png")
+def icon512():
+    return Response(Path("icon-512.png").read_bytes(), media_type="image/png", headers={"Cache-Control":"public, max-age=86400"})
