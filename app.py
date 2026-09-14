@@ -413,6 +413,7 @@ refresh(); setInterval(refresh,30000);
 @app.get("/api/test-push")
 def test_push():
     item = {
+        "id": "server-test-1",
         "chain": "TEST",
         "title": "🎬 서버 자동 푸시 성공!",
         "booking_url": "https://stage-greeting-alert.onrender.com",
