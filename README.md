@@ -1,3 +1,3 @@
-# 무대인사 알림 - Firebase API 키 최종 수정본
+# 무대인사 알림 - Firebase API 키 복사값 반영 최종본
 
-Firebase 콘솔 화면의 웹 앱 구성값을 정확히 반영하고 대조 확인한 버전입니다.
+Google Cloud Console의 `키 표시`에서 복사한 Browser key 값을 그대로 반영했습니다.
