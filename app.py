@@ -251,10 +251,10 @@ def send_push(item):
                 )
                 messaging.send(msg)
                 sent += 1
-            except Exception as e:
-                            print("FCM SEND ERROR:", repr(e), flush=True)
-                if 'registration-token-not-registered' in str(e).lower() or 'not found' in str(e).lower():
-                    invalid.append(token)
+         except Exception as e:
+            print("FCM SEND ERROR:", repr(e), flush=True)
+            if 'registration-token-not-registered' in str(e).lower() or 'not found' in str(e).lower():
+                invalid.append(token)
         if invalid:
             with db() as c:
                 c.executemany('DELETE FROM tokens WHERE token=?', [(t,) for t in invalid])
