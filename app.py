@@ -156,12 +156,18 @@ def candidate_links(source, html):
 
     # 개별 페이지 자체가 무대인사 페이지인 경우
     page_text = clean_text(soup.get_text(' ', strip=True))
-    if source['chain'] == '메가박스' and any(k.lower() in page_text.lower() for k in KEYWORDS):
-        title = soup.title.get_text(' ', strip=True) if soup.title else '메가박스 무대인사'
-        title = clean_text(title)
-        key = (title[:160], source['url'])
-        seen.add(key)
-        found.append((title[:160], source['url']))
+        if source['chain'] == '메가박스' and any(k.lower() in page_text.lower() for k in KEYWORDS):
+        title = ''
+        for tag in soup.find_all(['h1', 'h2', 'h3', 'h4', 'strong', 'p']):
+            txt = clean_text(tag.get_text(' ', strip=True))
+            if any(k.lower() in txt.lower() for k in KEYWORDS) and 4 < len(txt) <= 160:
+                title = txt
+                break
+
+        if title:
+            key = (title, source['url'])
+            seen.add(key)
+            found.append((title, source['url']))
 
     # 일반적인 링크 기반 감지
     for a in soup.find_all('a'):
