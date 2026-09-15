@@ -156,7 +156,7 @@ def candidate_links(source, html):
 
     # 개별 페이지 자체가 무대인사 페이지인 경우
     page_text = clean_text(soup.get_text(' ', strip=True))
-        if source['chain'] == '메가박스' and any(k.lower() in page_text.lower() for k in KEYWORDS):
+    if source['chain'] == '메가박스' and any(k.lower() in page_text.lower() for k in KEYWORDS):
         title = ''
         for tag in soup.find_all(['h1', 'h2', 'h3', 'h4', 'strong', 'p']):
             txt = clean_text(tag.get_text(' ', strip=True))
