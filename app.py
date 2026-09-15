@@ -141,7 +141,10 @@ def extract_detail(text):
 
 
 def fetch(url, timeout=20):
-    r = requests.get(url, timeout=timeout, headers=UA)
+    headers = dict(UA)
+    headers["Referer"] = "https://cgv.co.kr/"
+    headers["Accept-Language"] = "ko-KR,ko;q=0.9,en;q=0.8"
+    r = requests.get(url, timeout=timeout, headers=headers)
     r.raise_for_status()
     return r.text
 
