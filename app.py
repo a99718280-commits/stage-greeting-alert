@@ -154,22 +154,37 @@ def candidate_links(source, html):
     found = []
     seen = set()
 
+    # 개별 페이지 자체가 무대인사 페이지인 경우
+    page_text = clean_text(soup.get_text(' ', strip=True))
+    if source['chain'] == '메가박스' and any(k.lower() in page_text.lower() for k in KEYWORDS):
+        title = soup.title.get_text(' ', strip=True) if soup.title else '메가박스 무대인사'
+        title = clean_text(title)
+        key = (title[:160], source['url'])
+        seen.add(key)
+        found.append((title[:160], source['url']))
+
     # 일반적인 링크 기반 감지
     for a in soup.find_all('a'):
         txt = clean_text(a.get_text(' ', strip=True))
         href = abs_url(source['url'], a.get('href'))
+
         if not txt or txt in EXACT_NOISE or len(txt) < 4:
             continue
+
         keyword_hit = any(k.lower() in txt.lower() for k in KEYWORDS)
-        # 롯데의 무대인사 전용 카테고리는 상세 이벤트 링크 자체도 후보로 본다.
-        lotte_detail = source['chain'] == '롯데시네마' and ('Event' in href or '/event/' in href.lower()) and len(txt) <= 160
+        lotte_detail = (
+            source['chain'] == '롯데시네마'
+            and ('Event' in href or '/event/' in href.lower())
+            and len(txt) <= 160
+        )
+
         if keyword_hit or lotte_detail:
             key = (txt[:160], href)
             if key not in seen:
                 seen.add(key)
                 found.append((txt[:160], href))
 
-    # CGV 예약 화면은 '(무대인사)'가 텍스트 노드로만 잡힐 때가 있어 주변 블록을 후보로 추가
+    # CGV 화면에서 링크 없이 무대인사 텍스트만 노출되는 경우
     if source['chain'] == 'CGV':
         for node in soup.find_all(string=re.compile('무대인사')):
             parent = node.parent
@@ -184,7 +199,7 @@ def candidate_links(source, html):
                             seen.add(key)
                             found.append((txt[:160], href))
                         break
-                    parent = parent.parent if parent else None
+                parent = parent.parent if parent else None
 
     return found[:80]
 
