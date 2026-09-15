@@ -409,3 +409,13 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 async function refresh(){try{const st=await (await fetch('/api/status')).json();serverStatus.textContent=`자동감지 최근 실행: ${st.last_scan_at||'아직 없음'} · 등록 기기 ${st.token_count}대 · 자동 푸시 ${st.firebase_sender_ready?'준비됨':'서버 인증 필요'}`;if(st.firebase_sender_ready)serverStatus.className='mini ok';else serverStatus.className='mini warn';const data=await (await fetch('/api/items?limit=20')).json();if(!data.items?.length){itemsEl.innerHTML='<p>아직 감지 기록이 없습니다.</p>';return}itemsEl.innerHTML=data.items.map((x,i)=>`<div class="item"><div><span class="badge ${i<3?'new':''}">${i<3?'NEW':'감지'}</span><span class="badge">${esc(x.chain)}</span></div><div class="title">${esc(x.title)}</div><div class="meta">📅 ${esc(x.date_text)} · ⏰ ${esc(x.time_text)}<br>🎤 ${esc(x.timing)}<br>👥 ${esc(x.participants)}</div><div class="row"><a class="btn primary" href="${esc(x.booking_url)}" target="_blank" rel="noopener">🎟️ 바로가기</a><a class="btn secondary" href="${esc(x.source_url)}" target="_blank" rel="noopener">📢 원문</a></div><div class="mini">최초 감지 ${esc(x.first_seen_at)}</div></div>`).join('')}catch(e){serverStatus.textContent='상태 확인 실패: '+e.message}}
 refresh(); setInterval(refresh,30000);
 </script></main></body></html>''' % (cfg, vapid)
+@app.get("/api/test-push")
+def test_push():
+    item = {
+        "id": "server-test-1",
+        "chain": "TEST",
+        "title": "🎬 서버 자동 푸시 성공!",
+        "booking_url": "https://stage-greeting-alert.onrender.com",
+        "timing": "테스트 알림"
+    }
+    return send_push(item)
