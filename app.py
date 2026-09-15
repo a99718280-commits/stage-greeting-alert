@@ -36,7 +36,7 @@ SOURCES = [
     },
     {
         'chain': '메가박스',
-        'url': 'https://www.megabox.co.kr/event/detail?eventNo=20049',
+       'url': 'https://www.megabox.co.kr/event',
         'booking_url': 'https://www.megabox.co.kr/booking',
     },
 ]
